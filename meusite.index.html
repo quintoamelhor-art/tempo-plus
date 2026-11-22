@@ -1,0 +1,852 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tempo+ | Seu tempo, em um só lugar</title>
+
+<style>
+:root {
+  --bg: #0b1020;
+  --panel: #141c30;
+  --panel2: #1b2640;
+  --accent: #70a5ff;
+  --text: #f3f6ff;
+  --muted: #9aa9c4;
+  --border: #293651;
+  --green: #65d6a0;
+  --red: #ff737d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+
+header {
+  padding: 22px 7%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: bold;
+  letter-spacing: -1px;
+}
+
+.logo span { color: var(--accent); }
+
+header small { color: var(--muted); }
+
+main {
+  max-width: 1150px;
+  margin: auto;
+  padding: 35px 20px 60px;
+}
+
+.intro { margin-bottom: 28px; }
+
+.intro h1 {
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+
+.intro p, .muted { color: var(--muted); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 23px;
+  min-width: 0;
+}
+
+.card h2 {
+  margin: 0 0 20px;
+  font-size: 19px;
+}
+
+.clock {
+  font-size: clamp(38px, 7vw, 65px);
+  font-weight: bold;
+  letter-spacing: -3px;
+  margin: 20px 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.date {
+  color: var(--muted);
+  margin-bottom: 23px;
+}
+
+select, input, textarea {
+  width: 100%;
+  padding: 12px;
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  outline: none;
+  font-size: 14px;
+}
+
+select:focus, input:focus, textarea:focus {
+  border-color: var(--accent);
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 14px 0 7px;
+}
+
+button {
+  padding: 11px 17px;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+  background: var(--accent);
+  color: #081326;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+button:hover { filter: brightness(1.1); }
+
+button.secondary {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+button.danger {
+  background: #542b37;
+  color: #ffb1b7;
+}
+
+button.green {
+  background: var(--green);
+  color: #062719;
+}
+
+.actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 17px;
+}
+
+.stopwatch {
+  font-size: 47px;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  margin: 28px 0;
+  text-align: center;
+}
+
+.timer-display {
+  font-size: 43px;
+  font-weight: bold;
+  text-align: center;
+  margin: 25px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.alarm-card {
+  grid-column: 1 / -1;
+  border-color: #38547f;
+}
+
+.alarm-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.full { grid-column: 1 / -1; }
+
+.alarm-item {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  padding: 15px;
+  border-radius: 11px;
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.alarm-time {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.alarm-message {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  text-align: center;
+  padding: 25px;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  margin-top: 15px;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.status {
+  font-size: 12px;
+  color: var(--green);
+  margin-top: 10px;
+}
+
+@media(max-width: 700px) {
+  .grid { grid-template-columns: 1fr; }
+  .alarm-card { grid-column: auto; }
+  .alarm-form { grid-template-columns: 1fr; }
+  .full { grid-column: auto; }
+  header { padding: 18px 5%; }
+  .alarm-item { align-items: flex-start; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">Tempo<span>+</span></div>
+  <small>Seu tempo, em um só lugar.</small>
+</header>
+
+<main>
+
+  <section class="intro">
+    <h1>Controle seu tempo.</h1>
+    <p>Relógio mundial, cronômetro, temporizador e despertador inteligente.</p>
+  </section>
+
+  <div class="grid">
+
+    <!-- RELÓGIO -->
+    <section class="card">
+      <h2>Relógio mundial</h2>
+
+      <label>Escolha um fuso horário</label>
+      <select id="timezone"></select>
+
+      <div class="clock" id="clock">00:00:00</div>
+      <div class="date" id="date"></div>
+
+      <label>Formato do relógio</label>
+      <select id="format">
+        <option value="24">24 horas</option>
+        <option value="12">12 horas</option>
+      </select>
+
+      <div class="status" id="timezoneStatus"></div>
+    </section>
+
+    <!-- CRONÔMETRO -->
+    <section class="card">
+      <h2>Cronômetro</h2>
+
+      <div class="stopwatch" id="stopwatch">00:00:00.00</div>
+
+      <div class="actions">
+        <button id="startStopwatch">Iniciar</button>
+        <button class="secondary" id="lapStopwatch">Volta</button>
+        <button class="danger" id="resetStopwatch">Zerar</button>
+      </div>
+
+      <div id="laps" class="muted" style="margin-top:18px"></div>
+    </section>
+
+    <!-- TEMPORIZADOR -->
+    <section class="card">
+      <h2>Temporizador</h2>
+
+      <label>Horas</label>
+      <input type="number" id="timerHours" min="0" max="99" value="0">
+
+      <label>Minutos</label>
+      <input type="number" id="timerMinutes" min="0" max="59" value="5">
+
+      <label>Segundos</label>
+      <input type="number" id="timerSeconds" min="0" max="59" value="0">
+
+      <div class="timer-display" id="timerDisplay">05:00</div>
+
+      <div class="actions">
+        <button id="startTimer">Iniciar</button>
+        <button class="secondary" id="pauseTimer">Pausar</button>
+        <button class="danger" id="resetTimer">Zerar</button>
+      </div>
+    </section>
+
+    <!-- CONFIGURAÇÃO DE VOZ -->
+    <section class="card">
+      <h2>Configuração de voz</h2>
+
+      <label>Voz do despertador</label>
+      <select id="voiceSelect">
+        <option value="">Carregando vozes...</option>
+      </select>
+
+      <label>Velocidade da fala</label>
+      <select id="speechRate">
+        <option value="0.8">Lenta</option>
+        <option value="1" selected>Normal</option>
+        <option value="1.2">Rápida</option>
+      </select>
+
+      <label>Teste de voz</label>
+      <textarea id="testText" rows="2">Olá! Este é o teste de voz do Tempo Mais.</textarea>
+
+      <div class="actions">
+        <button id="testVoice">Testar voz</button>
+        <button class="secondary" id="stopVoice">Parar fala</button>
+      </div>
+
+      <p class="muted" style="font-size:12px">
+        As vozes disponíveis dependem do navegador e do sistema operacional.
+      </p>
+    </section>
+
+    <!-- DESPERTADOR -->
+    <section class="card alarm-card">
+      <h2>Despertador inteligente</h2>
+
+      <p class="muted">
+        Escolha o horário e escreva uma mensagem. Quando chegar a hora,
+        o navegador falará exatamente o texto que você escreveu.
+      </p>
+
+      <div class="alarm-form">
+
+        <div>
+          <label>Data do alarme</label>
+          <input type="date" id="alarmDate">
+        </div>
+
+        <div>
+          <label>Horário</label>
+          <input type="time" id="alarmTime" value="07:00">
+        </div>
+
+        <div class="full">
+          <label>O que a voz deverá falar?</label>
+          <textarea id="alarmText" rows="3"
+          placeholder="Ex.: Bom dia! Está na hora de acordar. Hoje será um ótimo dia!"></textarea>
+        </div>
+
+        <div class="full">
+          <button class="green" id="addAlarm">Adicionar despertador</button>
+        </div>
+
+      </div>
+
+      <h3 style="margin-top:28px">Meus alarmes</h3>
+      <div id="alarmList">
+        <div class="empty">Nenhum alarme cadastrado.</div>
+      </div>
+
+      <div class="status" id="alarmStatus">
+        Os alarmes funcionam enquanto esta página estiver aberta.
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  Tempo+ © 2026 — Desenvolvido para organizar seu tempo.
+</footer>
+
+<script>
+
+// ========================================
+// RELÓGIO MUNDIAL
+// ========================================
+
+const timezone = document.getElementById("timezone");
+const clock = document.getElementById("clock");
+const date = document.getElementById("date");
+const format = document.getElementById("format");
+
+const zones = Intl.supportedValuesOf
+  ? Intl.supportedValuesOf("timeZone")
+  : [
+    "America/Recife",
+    "America/Sao_Paulo",
+    "America/New_York",
+    "Europe/London",
+    "Europe/Paris",
+    "Asia/Tokyo",
+    "Asia/Dubai",
+    "Australia/Sydney",
+    "UTC"
+  ];
+
+zones.forEach(zone => {
+  const option = document.createElement("option");
+  option.value = zone;
+  option.textContent = zone.replaceAll("_", " ");
+  timezone.appendChild(option);
+});
+
+timezone.value = zones.includes("America/Recife")
+  ? "America/Recife"
+  : Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+function updateClock() {
+  const now = new Date();
+  const zone = timezone.value;
+  const is24 = format.value === "24";
+
+  clock.textContent = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: zone,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: !is24
+  }).format(now);
+
+  date.textContent = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: zone,
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
+  }).format(now);
+
+  document.getElementById("timezoneStatus").textContent =
+    "Fuso selecionado: " + zone;
+}
+
+setInterval(updateClock, 250);
+updateClock();
+
+timezone.addEventListener("change", updateClock);
+format.addEventListener("change", updateClock);
+
+
+// ========================================
+// CRONÔMETRO
+// ========================================
+
+let stopwatchRunning = false;
+let stopwatchStart = 0;
+let stopwatchElapsed = 0;
+let stopwatchInterval = null;
+
+const stopwatchDisplay = document.getElementById("stopwatch");
+
+function stopwatchFormat(ms) {
+  const centiseconds = Math.floor(ms / 10);
+  const cs = centiseconds % 100;
+  const seconds = Math.floor(centiseconds / 100) % 60;
+  const minutes = Math.floor(centiseconds / 6000) % 60;
+  const hours = Math.floor(centiseconds / 360000);
+
+  return [hours, minutes, seconds]
+    .map(n => String(n).padStart(2, "0"))
+    .join(":") + "." + String(cs).padStart(2, "0");
+}
+
+function updateStopwatch() {
+  const elapsed = stopwatchElapsed +
+    (stopwatchRunning ? Date.now() - stopwatchStart : 0);
+
+  stopwatchDisplay.textContent = stopwatchFormat(elapsed);
+}
+
+document.getElementById("startStopwatch").onclick = function() {
+  if (!stopwatchRunning) {
+    stopwatchStart = Date.now();
+    stopwatchRunning = true;
+    this.textContent = "Pausar";
+    stopwatchInterval = setInterval(updateStopwatch, 30);
+  } else {
+    stopwatchElapsed += Date.now() - stopwatchStart;
+    stopwatchRunning = false;
+    clearInterval(stopwatchInterval);
+    this.textContent = "Continuar";
+    updateStopwatch();
+  }
+};
+
+document.getElementById("resetStopwatch").onclick = () => {
+  stopwatchRunning = false;
+  clearInterval(stopwatchInterval);
+  stopwatchElapsed = 0;
+  stopwatchDisplay.textContent = "00:00:00.00";
+  document.getElementById("startStopwatch").textContent = "Iniciar";
+  document.getElementById("laps").innerHTML = "";
+};
+
+document.getElementById("lapStopwatch").onclick = () => {
+  if (!stopwatchRunning) return;
+
+  const lap = document.createElement("div");
+  lap.textContent = "Volta: " + stopwatchFormat(
+    stopwatchElapsed + Date.now() - stopwatchStart
+  );
+
+  document.getElementById("laps").prepend(lap);
+};
+
+
+// ========================================
+// TEMPORIZADOR
+// ========================================
+
+let timerRemaining = 0;
+let timerEnd = 0;
+let timerInterval = null;
+let timerRunning = false;
+
+const timerDisplay = document.getElementById("timerDisplay");
+
+function formatTimer(ms) {
+  const total = Math.ceil(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor(total % 3600 / 60);
+  const s = total % 60;
+
+  return h > 0
+    ? [h,m,s].map(n => String(n).padStart(2,"0")).join(":")
+    : [m,s].map(n => String(n).padStart(2,"0")).join(":");
+}
+
+function updateTimer() {
+  timerRemaining = Math.max(0, timerEnd - Date.now());
+  timerDisplay.textContent = formatTimer(timerRemaining);
+
+  if (timerRemaining <= 0) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    speak("O temporizador terminou!", true);
+    document.getElementById("startTimer").textContent = "Iniciar";
+  }
+}
+
+document.getElementById("startTimer").onclick = () => {
+  if (timerRunning) return;
+
+  if (timerRemaining <= 0) {
+    const h = Number(document.getElementById("timerHours").value);
+    const m = Number(document.getElementById("timerMinutes").value);
+    const s = Number(document.getElementById("timerSeconds").value);
+
+    if (![h,m,s].every(Number.isFinite) ||
+        h < 0 || m < 0 || m > 59 || s < 0 || s > 59 ||
+        h + m + s === 0) {
+      alert("Informe um tempo válido.");
+      return;
+    }
+
+    timerRemaining = (h * 3600 + m * 60 + s) * 1000;
+  }
+
+  timerEnd = Date.now() + timerRemaining;
+  timerRunning = true;
+  document.getElementById("startTimer").textContent = "Em andamento";
+  timerInterval = setInterval(updateTimer, 100);
+};
+
+document.getElementById("pauseTimer").onclick = () => {
+  if (!timerRunning) return;
+
+  clearInterval(timerInterval);
+  timerRemaining = Math.max(0, timerEnd - Date.now());
+  timerRunning = false;
+  document.getElementById("startTimer").textContent = "Continuar";
+  updateTimer();
+};
+
+document.getElementById("resetTimer").onclick = () => {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerRemaining = 0;
+  timerDisplay.textContent = "00:00";
+  document.getElementById("startTimer").textContent = "Iniciar";
+};
+
+
+// ========================================
+// SISTEMA DE VOZ
+// ========================================
+
+const voiceSelect = document.getElementById("voiceSelect");
+let availableVoices = [];
+
+function loadVoices() {
+  if (!("speechSynthesis" in window)) {
+    voiceSelect.innerHTML = "<option>Voz não suportada</option>";
+    return;
+  }
+
+  availableVoices = speechSynthesis.getVoices();
+
+  voiceSelect.innerHTML = "";
+
+  const portugueseVoices = availableVoices.filter(v =>
+    v.lang.toLowerCase().startsWith("pt")
+  );
+
+  const sorted = portugueseVoices.sort((a,b) => {
+    const score = v => {
+      let n = 0;
+      if (v.lang.toLowerCase() === "pt-br") n += 10;
+      if (/google/i.test(v.name)) n += 5;
+      return n;
+    };
+    return score(b) - score(a);
+  });
+
+  const list = sorted.length ? sorted : availableVoices;
+
+  list.forEach((voice, index) => {
+    const option = document.createElement("option");
+    option.value = availableVoices.indexOf(voice);
+    option.textContent = voice.name + " (" + voice.lang + ")";
+    voiceSelect.appendChild(option);
+  });
+
+  if (sorted.length === 0) {
+    voiceSelect.insertAdjacentHTML(
+      "afterbegin",
+      '<option value="">Nenhuma voz em português encontrada</option>'
+    );
+  }
+}
+
+if ("speechSynthesis" in window) {
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function speak(text, urgent = false) {
+  if (!("speechSynthesis" in window)) {
+    alert("Seu navegador não suporta síntese de voz.");
+    return;
+  }
+
+  if (urgent) speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "pt-BR";
+  utterance.rate = Number(document.getElementById("speechRate").value);
+
+  const selected = availableVoices[Number(voiceSelect.value)];
+
+  if (selected) utterance.voice = selected;
+
+  speechSynthesis.speak(utterance);
+}
+
+document.getElementById("testVoice").onclick = () => {
+  speak(document.getElementById("testText").value);
+};
+
+document.getElementById("stopVoice").onclick = () => {
+  speechSynthesis.cancel();
+};
+
+
+// ========================================
+// DESPERTADOR INTELIGENTE
+// ========================================
+
+let alarms = [];
+let alarmId = 0;
+
+const alarmList = document.getElementById("alarmList");
+const alarmDate = document.getElementById("alarmDate");
+
+// Converte uma data e hora do fuso escolhido para um instante UTC.
+function zonedDateTimeToUTC(dateString, timeString, zone) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  const [hour, minute] = timeString.split(":").map(Number);
+
+  const desired = Date.UTC(year, month - 1, day, hour, minute);
+  let guess = desired;
+
+  for (let i = 0; i < 5; i++) {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: zone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23"
+    }).formatToParts(new Date(guess));
+
+    const values = {};
+    parts.forEach(p => {
+      if (p.type !== "literal") values[p.type] = Number(p.value);
+    });
+
+    const represented = Date.UTC(
+      values.year, values.month - 1, values.day,
+      values.hour, values.minute
+    );
+
+    const correction = desired - represented;
+    guess += correction;
+
+    if (correction === 0) break;
+  }
+
+  return guess;
+}
+
+function setDefaultAlarmDate() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone.value,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+
+  alarmDate.value = parts;
+}
+
+setDefaultAlarmDate();
+
+timezone.addEventListener("change", setDefaultAlarmDate);
+
+document.getElementById("addAlarm").onclick = () => {
+  const selectedDate = alarmDate.value;
+  const selectedTime = document.getElementById("alarmTime").value;
+  const message = document.getElementById("alarmText").value.trim();
+
+  if (!selectedDate || !selectedTime || !message) {
+    alert("Preencha a data, o horário e a mensagem.");
+    return;
+  }
+
+  const timestamp = zonedDateTimeToUTC(
+    selectedDate, selectedTime, timezone.value
+  );
+
+  if (timestamp <= Date.now()) {
+    alert("Escolha um horário futuro no fuso selecionado.");
+    return;
+  }
+
+  alarms.push({
+    id: ++alarmId,
+    timestamp,
+    message,
+    time: selectedTime,
+    date: selectedDate,
+    zone: timezone.value,
+    active: true,
+    triggered: false
+  });
+
+  renderAlarms();
+
+  document.getElementById("alarmText").value = "";
+  document.getElementById("alarmStatus").textContent =
+    "Alarme cadastrado com sucesso.";
+};
+
+function renderAlarms() {
+  alarmList.innerHTML = "";
+
+  if (!alarms.length) {
+    alarmList.innerHTML =
+      '<div class="empty">Nenhum alarme cadastrado.</div>';
+    return;
+  }
+
+  alarms.forEach(alarm => {
+    const item = document.createElement("div");
+    item.className = "alarm-item";
+
+    const info = document.createElement("div");
+
+    const time = document.createElement("div");
+    time.className = "alarm-time";
+    time.textContent = alarm.time;
+
+    const details = document.createElement("div");
+    details.className = "alarm-message";
+    details.textContent =
+      alarm.date + " · " + alarm.zone + " · " + alarm.message;
+
+    info.append(time, details);
+
+    const remove = document.createElement("button");
+    remove.className = "danger";
+    remove.textContent = "Excluir";
+
+    remove.onclick = () => {
+      alarms = alarms.filter(a => a.id !== alarm.id);
+      renderAlarms();
+    };
+
+    item.append(info, remove);
+    alarmList.appendChild(item);
+  });
+}
+
+// Verifica continuamente se chegou a hora de algum alarme.
+function checkAlarms() {
+  const now = Date.now();
+
+  alarms.forEach(alarm => {
+    if (alarm.active && !alarm.triggered &&
+        now >= alarm.timestamp) {
+
+      alarm.triggered = true;
+      alarm.active = false;
+
+      speak(alarm.message, true);
+
+      document.getElementById("alarmStatus").textContent =
+        "Despertador acionado! " + alarm.time;
+
+      alert("DESPERTADOR!\n\n" + alarm.message);
+    }
+  });
+
+  // Remove alarmes que já tocaram.
+  alarms = alarms.filter(a => !a.triggered);
+  renderAlarms();
+}
+
+setInterval(checkAlarms, 500);
+
+</script>
+</body>
+</html>
